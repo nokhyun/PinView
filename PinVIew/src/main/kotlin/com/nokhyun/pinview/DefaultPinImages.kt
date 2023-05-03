@@ -15,7 +15,7 @@ import com.nokhyun.pinview.interfaces.PinImage
  *  핀 이미지
  *  @param pinLength - 핀 길이
  *  */
-internal class PinImages(
+internal class DefaultPinImages(
     private val context: Context,
     private val pinLength: Int,
     height: Int
@@ -26,7 +26,6 @@ internal class PinImages(
         layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, height)
 
         initView()
-
     }
 
     private fun initView() {
@@ -73,14 +72,17 @@ internal class PinImages(
                 val image = if (img == null) null else ContextCompat.getDrawable(context, img)
                 setImageDrawable(image)
             }
-            imageTintList = ColorStateList.valueOf(ContextCompat.getColor(context, android.R.color.holo_purple))
 
-//                _pinImageViewList.add(this)
+            imageTintList = ColorStateList.valueOf(ContextCompat.getColor(context, android.R.color.holo_purple))
             this
         }
     }
 
     private fun log(msg: String) {
-        Log.e("PinPad", msg)
+        Log.e(TAG, msg)
+    }
+
+    companion object {
+        private const val TAG = "DefaultPinImages"
     }
 }

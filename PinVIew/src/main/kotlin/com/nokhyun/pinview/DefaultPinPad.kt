@@ -10,9 +10,12 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.nokhyun.pinview.interfaces.PinPad
 
-/** Pin Pad */
+/**
+ *  TextPinPad
+ *  */
 internal class DefaultPinPad(
-    private val context: Context
+    private val context: Context,
+    height: Int = LayoutParams.WRAP_CONTENT
 ) : LinearLayout(context), PinPad {
     private val shufflePinCode get() = listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0").shuffled()
 
@@ -33,18 +36,18 @@ internal class DefaultPinPad(
     init {
         orientation = VERTICAL
         layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-        initView()
+        initView(height)
     }
 
-    private fun initView() {
+    private fun initView(height: Int) {
         this.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
 
         repeat(4) {
-            this.addView(getPinCodeViewGroup())
+            this.addView(getPinCodeViewGroup(height))
         }
     }
 
-    private fun getPinCodeViewGroup(): LinearLayout {
+    private fun getPinCodeViewGroup(height: Int): LinearLayout {
         return LinearLayout(context).apply {
             orientation = HORIZONTAL
             layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
@@ -52,7 +55,7 @@ internal class DefaultPinPad(
             (1..3).map {
                 ComponentFactory.createTextView(context) {
                     gravity = Gravity.CENTER
-                    layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+                    layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, height).apply {
                         weight = 1f
                     }
                     setTextSize(TypedValue.COMPLEX_UNIT_DIP, 24f)
@@ -118,7 +121,6 @@ internal class DefaultPinPad(
     }
 
     override fun addPinCode(pin: String, length: Int, block: (ImageView) -> Unit) {
-        log("addPinCode: $pin")
         if (_pinInput.size < length) {
             val iv = ComponentFactory.createImageView(context) {
                 setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_launcher_foreground))
@@ -129,11 +131,13 @@ internal class DefaultPinPad(
 
             block(iv)
         }
-
-        log("_pinInput: $pinInput")
     }
 
     private fun log(msg: String) {
-        Log.e("PinPad", msg)
+        Log.e(TAG, msg)
+    }
+
+    companion object {
+        private const val TAG = "DefaultPinPad"
     }
 }
