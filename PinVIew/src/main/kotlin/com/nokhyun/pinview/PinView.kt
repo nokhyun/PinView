@@ -6,13 +6,13 @@ import android.util.AttributeSet
 import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
-import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
+import androidx.core.view.children
 import androidx.core.view.setPadding
 import com.nokhyun.pinview.common.dp
 
@@ -27,7 +27,7 @@ class PinView @JvmOverloads constructor(
     private var _pinLength: Int = DEFAULT_PIN_LENGTH
 
     // TODO 수정필요
-    private val pinImages = PinImages(context)
+    private var pinImages: PinImages? = null
     private val pinPad = PinPad(context)
 
     init {
@@ -47,15 +47,16 @@ class PinView @JvmOverloads constructor(
 
         typedArray.recycle()
 
-        addView(pinImages.create(_pinLength))
+        pinImages = PinImages(context, _pinLength, 56.dp)
+        addView(pinImages)
         addView(pinPad)
 
         pinPad.setNumberPad()
 
         pinPad.setNumberListener {
             if (pinPad.pinInput.size < _pinLength) {
-                pinPad.addPinCode((it as TextView).text.toString(), _pinLength){
-                    // TODO PinImage 추가부터 시작
+                pinPad.addPinCode((it as TextView).text.toString(), _pinLength) {
+                    pinImages?.addImage(R.drawable.ic_launcher_foreground, pinPad.pinInput.size)
                 }
             }
         }
@@ -66,8 +67,8 @@ class PinView @JvmOverloads constructor(
 
         pinPad.setDeleteButtonListener {
             if (pinPad.pinInput.isNotEmpty()) {
-                // TODO 하나씩 제거
                 pinPad.removePinCode()
+                pinImages?.removeImage()
             }
         }
     }
@@ -76,34 +77,61 @@ class PinView @JvmOverloads constructor(
         Log.e(TAG, msg)
     }
 
-    /** 핀 이미지 생성 */
+    /**
+     *  핀 이미지
+     *  @param pinLength - 핀 길이
+     *  */
     private class PinImages(
-        private val context: Context
-    ) {
-        // TODO Factory 고려. 해당 클래스에 뭔가 너무 기능이 몰려있는 느낌...??
-        fun create(pinLength: Int, height: Int = LayoutParams.WRAP_CONTENT): LinearLayout {
-            return createLinearLayout(pinLength, height)
-        }
+        private val context: Context,
+        private val pinLength: Int,
+        height: Int
+    ) : LinearLayout(context) {
+        init {
+            orientation = HORIZONTAL
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, height)
 
-        private fun createLinearLayout(pinLength: Int, height: Int): LinearLayout {
-            log("[createLinearLayout]")
-            return ComponentFactory.createLinearLayout(context) {
-                orientation = HORIZONTAL
-                layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, height)
-
-//                for (i in 0 until pinLength) {
-//                    addView(createImageView(R.drawable.ic_launcher_foreground))
-//                }
-
-                this
+            repeat(pinLength) {
+                addView(createImageView())
             }
         }
 
-        private fun createImageView(@DrawableRes img: Int): ImageView {
+        fun addImage(@DrawableRes img: Int, pinInputSize: Int) {
+            log("[addImage]")
+            val imageViews = children.filterIsInstance<ImageView>()
+            val count = imageViews.count {
+                it.drawable != null
+            }.let { it + 1 }
+
+            if (pinInputSize > pinLength && count != pinInputSize) return
+
+            imageViews.forEach { iv ->
+                if (iv.drawable == null) {
+                    iv.setImageDrawable(ContextCompat.getDrawable(context, img))
+                    return
+                }
+            }
+        }
+
+        fun removeImage() {
+            log("[removeImage]")
+            if (childCount > -1) {
+                for (i in childCount - 1 downTo 0) {
+                    children.filterIsInstance<ImageView>().toList().let {
+                        if (it[i].drawable != null) {
+                            it[i].setImageDrawable(null)
+                            return
+                        }
+                    }
+                }
+            }
+        }
+
+        private fun createImageView(@DrawableRes img: Int? = null): ImageView {
             return ComponentFactory.createImageView(context) {
                 layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
                     weight = 1f
-                    setImageDrawable(ContextCompat.getDrawable(context, img))
+                    val image = if (img == null) null else ContextCompat.getDrawable(context, img)
+                    setImageDrawable(image)
                 }
                 imageTintList = ColorStateList.valueOf(ContextCompat.getColor(context, android.R.color.holo_purple))
 
@@ -128,8 +156,8 @@ class PinView @JvmOverloads constructor(
         private val _numberPad: MutableList<TextView> = mutableListOf()
         val numberPad: List<TextView> = _numberPad
 
-        private val _pinInput = mutableSetOf<String>() // 사용자 핀 입력 배열
-        val pinInput: Set<String> = _pinInput
+        private val _pinInput = mutableListOf<String>() // 사용자 핀 입력 배열
+        val pinInput: List<String> = _pinInput
 
         private var _pinImageViewList = mutableListOf<ImageView>()  // 핀 이미지
         val pinImageViewList = _pinImageViewList
@@ -149,12 +177,9 @@ class PinView @JvmOverloads constructor(
         private fun initView() {
             this.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
 
-            // 4줄 생성
             repeat(4) {
                 this.addView(getPinCodeViewGroup())
             }
-
-            // getTextView Button position
         }
 
         private fun getPinCodeViewGroup(): LinearLayout {
@@ -218,18 +243,16 @@ class PinView @JvmOverloads constructor(
             }
         }
 
-        fun setDeleteButtonListener(listener: View.OnClickListener) {
+        fun setDeleteButtonListener(listener: OnClickListener) {
             btnDelete?.setOnClickListener(listener)
         }
 
-        fun setShuffleButtonListener(listener: View.OnClickListener) {
+        fun setShuffleButtonListener(listener: OnClickListener) {
             btnPinShuffle?.setOnClickListener(listener)
         }
 
         fun removePinCode() {
-            // TODO pinpad remove
-            _pinImageViewList[_pinImageViewList.size - 1].setImageDrawable(null)
-//            _pinInput.remove(_pinInput.size - 1)
+            _pinInput.remove(_pinInput.last())
         }
 
         fun addPinCode(pin: String, length: Int, block: (ImageView) -> Unit) {
