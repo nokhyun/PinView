@@ -23,7 +23,6 @@ class PinView @JvmOverloads constructor(
     private var failCount = 0
     private var initializationCount = 0
     private var pinLength: Int = DEFAULT_PIN_LENGTH
-
     @DrawableRes
     private var pinCodeImage: Int = R.drawable.ic_launcher_foreground
     private var pinImages: DefaultPinImages? = null
