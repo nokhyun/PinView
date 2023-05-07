@@ -4,7 +4,7 @@ import android.content.Context
 import com.nokhyun.pinview.DefaultPinPad
 import com.nokhyun.pinview.interfaces.PinPad
 
-object PinPadFactory {
+internal object PinPadFactory {
     enum class PinPadType {
         DEFAULT
     }

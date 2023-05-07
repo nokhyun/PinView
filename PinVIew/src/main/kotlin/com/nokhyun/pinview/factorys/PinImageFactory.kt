@@ -4,7 +4,7 @@ import android.content.Context
 import com.nokhyun.pinview.DefaultPinImages
 import com.nokhyun.pinview.interfaces.PinImage
 
-object PinImageFactory {
+internal object PinImageFactory {
     enum class PinType {
         DEFAULT
     }

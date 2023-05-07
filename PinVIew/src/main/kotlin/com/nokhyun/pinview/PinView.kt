@@ -6,6 +6,7 @@ import android.util.Log
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.children
+import androidx.core.view.size
 import androidx.core.view.updateLayoutParams
 import com.nokhyun.pinview.common.dp
 import com.nokhyun.pinview.factorys.PinImageFactory
@@ -19,11 +20,13 @@ class PinView @JvmOverloads constructor(
     attrs: AttributeSet? = null
 ) : LinearLayout(context, attrs) {
 
+    // TODO clear 조건 카운트 받아야함.
     private var _pinLength: Int = DEFAULT_PIN_LENGTH
-    private var defaultPinImages: DefaultPinImages? = null
-    private val defaultPinPad: DefaultPinPad = PinPadFactory.create(PinPadFactory.PinPadType.DEFAULT, context, 48.dp)
-
-    // TODO SharedPreference class 작업필요.
+    private var pinImages: DefaultPinImages? = null
+    private val pinPad: DefaultPinPad = PinPadFactory.create(PinPadFactory.PinPadType.DEFAULT, context, 48.dp)
+    private var key: String = ""
+    var onSuccess: (() -> Unit)? = null
+    var onFailure: (() -> Unit)? = null
 
     init {
         attrs?.also {
@@ -50,11 +53,11 @@ class PinView @JvmOverloads constructor(
         typedArray.recycle()
 
         if (hadZeroLength(_pinLength)) {
-            defaultPinImages = PinImageFactory.create(PinImageFactory.PinType.DEFAULT, context, _pinLength, 56.dp)
-            addView(defaultPinImages)
-            addView(defaultPinPad)
+            pinImages = PinImageFactory.create(PinImageFactory.PinType.DEFAULT, context, _pinLength, 56.dp)
+            addView(pinImages)
+            addView(pinPad)
 
-            defaultPinPad.setNumberPad()
+            pinPad.setNumberPad()
 
             setListener()
             setChildLayoutParams()
@@ -74,24 +77,69 @@ class PinView @JvmOverloads constructor(
     }
 
     private fun setListener() {
-        defaultPinPad.setNumberListener {
-            if (defaultPinPad.pinInput.size < _pinLength) {
-                defaultPinPad.addPinCode((it as TextView).text.toString(), _pinLength) {
-                    defaultPinImages?.addImage(R.drawable.ic_launcher_foreground, defaultPinPad.pinInput.size)
+        pinPad.setNumberListener {
+            if (pinPad.pinInput.size < _pinLength) {
+                pinPad.addPinCode(
+                    (it as TextView).text.toString(),
+                    _pinLength
+                ) {
+                    pinImages?.addImage(R.drawable.ic_launcher_foreground, pinPad.pinInput.size)
+
+                    comparePinCode()
                 }
             }
         }
 
-        defaultPinPad.setShuffleButtonListener {
-            defaultPinPad.shufflePinNumber()
+        pinPad.setShuffleButtonListener {
+            pinPad.shufflePinNumber()
         }
 
-        defaultPinPad.setDeleteButtonListener {
-            if (defaultPinPad.pinInput.isNotEmpty()) {
-                defaultPinPad.removePinCode()
-                defaultPinImages?.removeImage()
+        pinPad.setDeleteButtonListener {
+            if (pinPad.pinInput.isNotEmpty()) {
+                pinPad.removePinCode()
+                pinImages?.removeImage()
             }
         }
+    }
+
+    private fun comparePinCode() {
+        if(pinPad.pinInput.size != _pinLength) return
+
+        if (pinPad.comparePinCode(key, _pinLength)) {
+            (onSuccess ?: throw NullPointerException("PinView onSuccess is Null")).invoke()
+        } else {
+            (onFailure ?: throw NullPointerException("PinView onFailure is Null")).invoke()
+        }
+    }
+
+    fun initPinCodeSetting(fileName: String) {
+        context?.also { ctx ->
+            PinCodeSetting.init(ctx, fileName)
+        }
+    }
+
+    /**
+     * @param value: type is String
+     * */
+    fun savePinCode(key: String, value: String): Boolean {
+        this.key = key
+        return PinCodeSetting.savePinCode(key, value)
+    }
+
+    /**
+     * @param value: type is List
+     * */
+    fun savePinCode(key: String, value: List<String>): Boolean {
+        this.key = key
+        return PinCodeSetting.savePinCode(key, value.joinToString(""))
+    }
+
+    /**
+     * @param value: type is Array
+     * */
+    fun savePinCode(key: String, value: Array<String>): Boolean {
+        this.key = key
+        return PinCodeSetting.savePinCode(key, value.joinToString(""))
     }
 
     private fun log(msg: String) {

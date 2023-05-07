@@ -25,13 +25,13 @@ internal class DefaultPinPad(
     override val numberPad: List<TextView> = _numberPad
 
     private val _pinInput = mutableListOf<String>() // 사용자 핀 입력 배열
-    val pinInput: List<String> = _pinInput
+    override val pinInput: List<String> = _pinInput
 
     private var _btnPinShuffle: TextView? = null
-    val btnPinShuffle get() = _btnPinShuffle
+    private val btnPinShuffle get() = _btnPinShuffle
 
     private var _btnDelete: TextView? = null
-    val btnDelete get() = _btnDelete
+    private val btnDelete get() = _btnDelete
 
     init {
         orientation = VERTICAL
@@ -42,7 +42,7 @@ internal class DefaultPinPad(
     private fun initView(height: Int) {
         this.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
 
-        repeat(4) {
+        repeat(PAD_COLUMN) {
             this.addView(getPinCodeViewGroup(height))
         }
     }
@@ -128,9 +128,12 @@ internal class DefaultPinPad(
             }
 
             _pinInput.add(pin)
-
             block(iv)
         }
+    }
+
+    override fun comparePinCode(key: String, pinLength: Int): Boolean {
+        return PinCodeSetting.comparePinCode(key, _pinInput.joinToString(""))
     }
 
     private fun log(msg: String) {
@@ -139,5 +142,6 @@ internal class DefaultPinPad(
 
     companion object {
         private const val TAG = "DefaultPinPad"
+        private const val PAD_COLUMN = 4
     }
 }

@@ -5,6 +5,7 @@ import android.widget.ImageView
 import android.widget.TextView
 
 interface PinPad {
+    val pinInput: List<String>
     val numberPad: List<TextView>
     fun setNumberPad()
     fun shufflePinNumber()
@@ -15,4 +16,5 @@ interface PinPad {
     fun setShuffleButtonListener(listener: View.OnClickListener)
     fun removePinCode()
     fun addPinCode(pin: String, length: Int, block: (ImageView) -> Unit)
+    fun comparePinCode(key: String, pinLength: Int): Boolean
 }
