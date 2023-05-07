@@ -49,4 +49,8 @@ internal object PinCodeSetting {
     fun clearPinCode() {
         editor?.clear()
     }
+
+    fun pinState(key: String): Boolean {
+        return sharedPreferences?.getString(key, null) != null
+    }
 }

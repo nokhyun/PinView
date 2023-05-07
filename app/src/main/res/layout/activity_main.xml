@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -18,9 +18,23 @@
         app:layout_constraintTop_toTopOf="parent"
         app:pinLength="4" />
 
-    <TextView
+    <Button
+        android:id="@+id/btnPinState"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:text="asd" />
-</LinearLayout>
+        android:text="getPinState"
+        app:layout_constraintBottom_toBottomOf="@id/pinView"
+        app:layout_constraintEnd_toEndOf="@id/pinView"
+        app:layout_constraintStart_toEndOf="@id/tvPinState"
+        app:layout_constraintTop_toTopOf="@id/pinView" />
+
+    <TextView
+        android:id="@+id/tvPinState"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="24dp"
+        app:layout_constraintBottom_toBottomOf="@id/pinView"
+        app:layout_constraintEnd_toStartOf="@id/btnPinState"
+        app:layout_constraintStart_toStartOf="@id/pinView"
+        app:layout_constraintTop_toTopOf="@id/pinView" />
+</androidx.constraintlayout.widget.ConstraintLayout>

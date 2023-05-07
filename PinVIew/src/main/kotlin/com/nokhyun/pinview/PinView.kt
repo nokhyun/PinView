@@ -6,7 +6,6 @@ import android.util.Log
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.children
-import androidx.core.view.size
 import androidx.core.view.updateLayoutParams
 import com.nokhyun.pinview.common.dp
 import com.nokhyun.pinview.factorys.PinImageFactory
@@ -103,7 +102,7 @@ class PinView @JvmOverloads constructor(
     }
 
     private fun comparePinCode() {
-        if(pinPad.pinInput.size != _pinLength) return
+        if (pinPad.pinInput.size != _pinLength) return
 
         if (pinPad.comparePinCode(key, _pinLength)) {
             (onSuccess ?: throw NullPointerException("PinView onSuccess is Null")).invoke()
@@ -140,6 +139,10 @@ class PinView @JvmOverloads constructor(
     fun savePinCode(key: String, value: Array<String>): Boolean {
         this.key = key
         return PinCodeSetting.savePinCode(key, value.joinToString(""))
+    }
+
+    fun pinState(key: String): String {
+        return if (PinCodeSetting.pinState(key)) "Your pin is saved." else "No pins are saved."
     }
 
     private fun log(msg: String) {
