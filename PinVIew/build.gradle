@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
+    id 'maven-publish'
 }
 
 android {
@@ -39,4 +40,26 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
     implementation("androidx.security:security-crypto-ktx:1.1.0-alpha06")
+}
+
+afterEvaluate{
+    publishing {
+        publications{
+            release(MavenPublication){
+                from components.release
+
+                groupId = 'com.github.nokhyun'
+                artifactId = 'PinView'
+                version = "1.0.0"
+            }
+
+            debug(MavenPublication){
+                from components.debug
+
+                groupId = 'com.github.nokhyun'
+                artifactId = 'PinView'
+                version = "1.0.0"
+            }
+        }
+    }
 }
