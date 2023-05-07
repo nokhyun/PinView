@@ -16,7 +16,9 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:pinLength="4" />
+        app:pinLength="4"
+        app:initializationCount="5"
+        app:pinImage="@drawable/baseline_1x_mobiledata_24"/>
 
     <Button
         android:id="@+id/btnPinState"

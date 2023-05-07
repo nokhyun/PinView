@@ -5,6 +5,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.annotation.DrawableRes
 import androidx.core.view.children
 import androidx.core.view.updateLayoutParams
 import com.nokhyun.pinview.common.dp
@@ -19,13 +20,17 @@ class PinView @JvmOverloads constructor(
     attrs: AttributeSet? = null
 ) : LinearLayout(context, attrs) {
 
-    // TODO clear 조건 카운트 받아야함.
-    private var _pinLength: Int = DEFAULT_PIN_LENGTH
+    private var failCount = 0
+    private var initializationCount = 0
+    private var pinLength: Int = DEFAULT_PIN_LENGTH
+
+    @DrawableRes
+    private var pinCodeImage: Int = R.drawable.ic_launcher_foreground
     private var pinImages: DefaultPinImages? = null
     private val pinPad: DefaultPinPad = PinPadFactory.create(PinPadFactory.PinPadType.DEFAULT, context, 48.dp)
     private var key: String = ""
     var onSuccess: (() -> Unit)? = null
-    var onFailure: (() -> Unit)? = null
+    var onFailure: ((Int) -> Unit)? = null
 
     init {
         attrs?.also {
@@ -47,12 +52,14 @@ class PinView @JvmOverloads constructor(
         super.setOrientation(VERTICAL)
 
         val typedArray = context.obtainStyledAttributes(attrs, R.styleable.PinView)
-        _pinLength = typedArray.getInt(R.styleable.PinView_pinLength, DEFAULT_PIN_LENGTH)
+        pinLength = typedArray.getInt(R.styleable.PinView_pinLength, DEFAULT_PIN_LENGTH)
+        initializationCount = typedArray.getInt(R.styleable.PinView_initializationCount, DEFAULT_PIN_LENGTH)
+        pinCodeImage = typedArray.getResourceId(R.styleable.PinView_pinImage, R.drawable.ic_launcher_foreground)
 
         typedArray.recycle()
 
-        if (hadZeroLength(_pinLength)) {
-            pinImages = PinImageFactory.create(PinImageFactory.PinType.DEFAULT, context, _pinLength, 56.dp)
+        if (hadZeroLength(pinLength)) {
+            pinImages = PinImageFactory.create(PinImageFactory.PinType.DEFAULT, context, pinLength, 56.dp)
             addView(pinImages)
             addView(pinPad)
 
@@ -77,12 +84,12 @@ class PinView @JvmOverloads constructor(
 
     private fun setListener() {
         pinPad.setNumberListener {
-            if (pinPad.pinInput.size < _pinLength) {
+            if (pinPad.pinInput.size < pinLength) {
                 pinPad.addPinCode(
                     (it as TextView).text.toString(),
-                    _pinLength
+                    pinLength
                 ) {
-                    pinImages?.addImage(R.drawable.ic_launcher_foreground, pinPad.pinInput.size)
+                    pinImages?.addImage(pinCodeImage, pinPad.pinInput.size)
 
                     comparePinCode()
                 }
@@ -102,12 +109,17 @@ class PinView @JvmOverloads constructor(
     }
 
     private fun comparePinCode() {
-        if (pinPad.pinInput.size != _pinLength) return
+        if (pinPad.pinInput.size != pinLength) return
 
-        if (pinPad.comparePinCode(key, _pinLength)) {
+        if (pinPad.comparePinCode(key, pinLength)) {
             (onSuccess ?: throw NullPointerException("PinView onSuccess is Null")).invoke()
         } else {
-            (onFailure ?: throw NullPointerException("PinView onFailure is Null")).invoke()
+            failCount++
+            (onFailure ?: throw NullPointerException("PinView onFailure is Null")).invoke(failCount)
+            if (failCount >= initializationCount) {
+                failCount = 0
+                PinCodeSetting.clearPinCode()
+            }
         }
     }
 
@@ -122,6 +134,7 @@ class PinView @JvmOverloads constructor(
      * */
     fun savePinCode(key: String, value: String): Boolean {
         this.key = key
+        failCount = 0
         return PinCodeSetting.savePinCode(key, value)
     }
 
@@ -130,6 +143,7 @@ class PinView @JvmOverloads constructor(
      * */
     fun savePinCode(key: String, value: List<String>): Boolean {
         this.key = key
+        failCount = 0
         return PinCodeSetting.savePinCode(key, value.joinToString(""))
     }
 
@@ -138,6 +152,7 @@ class PinView @JvmOverloads constructor(
      * */
     fun savePinCode(key: String, value: Array<String>): Boolean {
         this.key = key
+        failCount = 0
         return PinCodeSetting.savePinCode(key, value.joinToString(""))
     }
 

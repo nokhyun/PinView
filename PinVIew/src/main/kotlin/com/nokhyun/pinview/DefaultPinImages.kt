@@ -1,7 +1,6 @@
 package com.nokhyun.pinview
 
 import android.content.Context
-import android.content.res.ColorStateList
 import android.util.Log
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -65,15 +64,13 @@ internal class DefaultPinImages(
         }
     }
 
-    private fun createImageView(@DrawableRes img: Int? = null): ImageView {
+    private fun createImageView(): ImageView {
         return ComponentFactory.createImageView(context) {
             layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
                 weight = 1f
-                val image = if (img == null) null else ContextCompat.getDrawable(context, img)
-                setImageDrawable(image)
+                setImageDrawable(null)
             }
 
-            imageTintList = ColorStateList.valueOf(ContextCompat.getColor(context, android.R.color.holo_purple))
             this
         }
     }

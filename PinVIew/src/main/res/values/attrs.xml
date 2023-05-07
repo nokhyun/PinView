@@ -2,5 +2,7 @@
 <resources>
     <declare-styleable name="PinView">
         <attr name="pinLength" format="integer" />
+        <attr name="initializationCount" format="integer" />
+        <attr name="pinImage" format="reference" />
     </declare-styleable>
 </resources>

@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             onFailure = {
-                Toast.makeText(applicationContext, "onFailure", Toast.LENGTH_SHORT).show()
+                Toast.makeText(applicationContext, "onFailure clearCount: $it", Toast.LENGTH_SHORT).show()
             }
         }
     }

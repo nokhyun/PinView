@@ -47,7 +47,10 @@ internal object PinCodeSetting {
     }
 
     fun clearPinCode() {
-        editor?.clear()
+        editor?.run {
+            clear()
+            apply()
+        }
     }
 
     fun pinState(key: String): Boolean {
