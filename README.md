@@ -1,5 +1,6 @@
 # PinView
 
+[![](https://jitpack.io/v/nokhyun/lib.svg)](https://jitpack.io/#nokhyun/lib)
 
 settings.gradle
 ```
