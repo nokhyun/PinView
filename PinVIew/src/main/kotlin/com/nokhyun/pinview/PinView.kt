@@ -23,6 +23,7 @@ class PinView @JvmOverloads constructor(
     private var failCount = 0
     private var initializationCount = 0
     private var pinLength: Int = DEFAULT_PIN_LENGTH
+
     @DrawableRes
     private var pinCodeImage: Int = R.drawable.ic_launcher_foreground
     private var pinImages: DefaultPinImages? = null
@@ -115,6 +116,7 @@ class PinView @JvmOverloads constructor(
         } else {
             failCount++
             (onFailure ?: throw NullPointerException("PinView onFailure is Null")).invoke(failCount)
+
             if (failCount >= initializationCount) {
                 failCount = 0
                 PinCodeSetting.clearPinCode()
